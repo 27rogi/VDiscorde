@@ -1,3 +1,4 @@
+![Image of Yaktocat](/assets/logo.PNG)
 # VKontakte Discord Bot
 :robot: Do you want to add VK integration to your Discord server? This bot help you with that!
 
