@@ -30,6 +30,10 @@ bot.on('ready', () => {
     bot.user.setGame("vk!help");
 });
 
+function getPrefix() {
+    return "vk!";
+}
+
 // function checkLanguage(id) {
 //     let lang = JSON.parse(fs.readFileSync("./lang.json", "utf8"));
 
@@ -69,13 +73,6 @@ function timeConverter(UNIX_timestamp) {
     return time;
 }
 
-function getPrefix(id) {
-
-
-    return defaultPrefix;
-
-}
-
 function generateKey() {
     var text = "";
     var possible = "&*!()@?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -86,135 +83,103 @@ function generateKey() {
     return text;
 }
 
-bot.on('message', (message) => {
-    if (message.content.startsWith(getPrefix(message.guild.id) + "user")) {
-        if (message.author.bot) return;
-        const args = message.content.split(/\s+/g).slice(1);
-        let vkID = args[0];
-        let member = message.mentions.members.first();
-        if (member !== undefined) { message.reply("Используйте **vk!info** *@<ник>* для получения страницы ВК пользователя."); return; }
-        if (vkID != undefined) {
-            message.reply(`Проверяем наличие пользователя с ID равным **${vkID.replace(',', "")}**`).then(message => message.delete(30000));
-            vk.api.users.get({
-                    user_ids: vkID.replace(',', ""),
-                    fields: 'sex, status, about, photo_max, online, followers_count, common_count, sex, bdate, last_seen'
-                })
-                .then((user) => {
-                    for (userData in user) {
-                        var EmbedMsg = new Discord.RichEmbed()
-                            .setTitle(`Информация о пользователе: **${vkID}**`)
-                            .setColor("#507299")
-                            .setThumbnail(user[userData].photo_max)
-                            .setURL("https://vk.com/" + user[userData].id)
-                            .addField("🎙 Имя", user[userData].first_name + " " + user[userData].last_name, true);
-                        switch (user[userData].sex) {
-                            case 2:
-                                EmbedMsg.addField("👨 Пол", "Мужской", true);
-                                break;
-                            case 1:
-                                EmbedMsg.addField("👩 Пол", "Женский", true);
-                                break;
-                        }
-                        switch (user[userData].online) {
-                            case 1:
-                                EmbedMsg.addField("🆗 Онлайн?", "Да", true);
-                                break;
-                            case 0:
-                                EmbedMsg.addField("🆗 Онлайн?", "Нет", true);
-                                break;
-                        }
-
-                        if (user[userData].last_seen.time !== undefined) {
-                            EmbedMsg.addField("⏰ Был в сети", timeConverter(user[userData].last_seen.time), true);
-                        }
-
-                        if (user[userData].bdate !== undefined && user[userData].bdate !== "") {
-                            EmbedMsg.addField("🎂 День рождения", user[userData].bdate, true);
-                        }
-                        EmbedMsg.addField("👥 Друзья", user[userData].common_count, true);
-                        EmbedMsg.addField("👤 Подписчики", user[userData].followers_count, true);
-
-                        if (user[userData].about !== undefined && user[userData].about !== "") {
-                            EmbedMsg.addField("📋 О пользователе", user[userData].about, true);
-                        }
-
-                        if (user[userData].status !== undefined && user[userData].status !== "") {
-                            EmbedMsg.addField("🖌 Статус", user[userData].status, true);
-                        }
-                        message.channel.send({
-                            embed: EmbedMsg
-                        });
-                    }
-                })
-                .catch(ApiError, (error) => {
-                    if (error.code == "113") {
-                        message.reply("Ошибка! Такой айди пользователя неверен!");
-                    }
-                    console.error(error);
-                });
-        } else {
-            message.reply("**Ой!** Вы забыли указать ID пользователя!");
-        }
+function isIdInt(id, ifNot) {
+    if (parseInt(id) === ifNot.object_id) {
+        return id;
+    } else {
+        return ifNot.object_id;
     }
+}
 
-    if (message.content.startsWith(getPrefix(message.guild.id) + "info")) {
-        if (message.author.bot) return;
-        let member = message.mentions.members.first();
-        let users = JSON.parse(fs.readFileSync("./users.json", "utf8"));
-        if (member === undefined) { message.reply("Неправильно указан пользователь, используйте `@` перед ником пользователя!"); return; }
-        if (users[member.id] === undefined) { message.reply("Данный пользователь ещё не привязал свой аккаунт **ВКонтакте**!"); return; }
-        vk.api.users.get({
-                user_ids: users[member.id].vkLink,
-                fields: 'sex, status, about, photo_max, online, followers_count, common_count, sex, bdate'
-            })
-            .then((user) => {
-                for (userData in user) {
-                    var EmbedMsg = new Discord.RichEmbed()
-                        .setTitle(`Информация о пользователе: **@${member.displayName}**`)
-                        .setColor("#507299")
-                        .setThumbnail(user[userData].photo_max)
-                        .setURL("https://vk.com/" + user[userData].id)
-                        .addField("🎙 Имя", user[userData].first_name + " " + user[userData].last_name, true);
-                    switch (user[userData].sex) {
-                        case 2:
-                            EmbedMsg.addField("👨 Пол", "Мужской", true);
-                            break;
-                        case 1:
-                            EmbedMsg.addField("👩 Пол", "Женский", true);
-                            break;
-                    }
-                    switch (user[userData].online) {
-                        case 1:
-                            EmbedMsg.addField("🆗 Онлайн?", "Да", true);
-                            break;
-                        case 0:
-                            EmbedMsg.addField("🆗 Онлайн?", "Нет", true);
-                            break;
-                    }
-                    if (user[userData].bdate !== undefined && user[userData].bdate !== "") {
-                        EmbedMsg.addField("🎂 День рождения", user[userData].bdate, true);
-                    }
-                    EmbedMsg.addField("👥 Друзья", user[userData].common_count, true);
-                    EmbedMsg.addField("👤 Подписчики", user[userData].followers_count, true);
 
-                    if (user[userData].about !== undefined && user[userData].about !== "") {
-                        EmbedMsg.addField("📋 О пользователе", user[userData].about, true);
-                    }
+function getUsercard(userId, message) {
+    if (userId != undefined) {
+        vk.api.call('users.get', {
+                user_ids: userId,
+                fields: 'sex, status, about, photo_max, online, followers_count, sex, bdate, last_seen'
+            }).then((user) => {
+                vk.api.call('utils.resolveScreenName', {
+                    screen_name: userId
+                }).then((userID) => {
+                    let id = isIdInt(userId, userID);
+                    vk.api.call('friends.get', {
+                        user_id: id,
+                        count: 0
+                    }).then((friends) => {
+                        for (userData in user) {
+                            var EmbedMsg = new Discord.RichEmbed()
+                                .setTitle(`Информация о пользователе: **${userId}**`)
+                                .setColor("#507299")
+                                .setThumbnail(user[userData].photo_max)
+                                .setURL("https://vk.com/" + user[userData].id)
+                                .addField("🎙 Имя", user[userData].first_name + " " + user[userData].last_name, true);
+                            switch (user[userData].sex) {
+                                case 2:
+                                    EmbedMsg.addField("👨 Пол", "Мужской", true);
+                                    break;
+                                case 1:
+                                    EmbedMsg.addField("👩 Пол", "Женский", true);
+                                    break;
+                            }
+                            switch (user[userData].online) {
+                                case 1:
+                                    EmbedMsg.addField("🆗 Онлайн?", "Да", true);
+                                    break;
+                                case 0:
+                                    if (user[userData].last_seen.time !== undefined) {
+                                        EmbedMsg.addField("⏰ Был в сети", timeConverter(user[userData].last_seen.time), true);
+                                    }
+                                    break;
+                            }
 
-                    if (user[userData].status !== undefined && user[userData].status !== "") {
-                        EmbedMsg.addField("🖌 Статус", user[userData].status, true);
-                    }
-                    message.channel.send({
-                        embed: EmbedMsg
+                            if (user[userData].bdate !== undefined && user[userData].bdate !== "") {
+                                EmbedMsg.addField("🎂 День рождения", user[userData].bdate, true);
+                            }
+                            if (friends.count !== undefined) {
+                                EmbedMsg.addField("👥 Друзья", friends.count, true);
+                            } else {
+                                console.log("странна");
+                            }
+
+                            EmbedMsg.addField("👤 Подписчики", user[userData].followers_count, true);
+
+                            if (user[userData].about !== undefined && user[userData].about !== "") {
+                                EmbedMsg.addField("📋 О пользователе", user[userData].about, true);
+                            }
+
+                            if (user[userData].status !== undefined && user[userData].status !== "") {
+                                EmbedMsg.addField("🖌 Статус", user[userData].status, true);
+                            }
+                            message.channel.send({
+                                embed: EmbedMsg
+                            });
+                        }
                     });
-                }
+                });
             })
             .catch(ApiError, (error) => {
                 if (error.code == "113") {
                     message.reply("Ошибка! Такой айди пользователя неверен!");
+                } else {
+                    console.log(error);
                 }
-                console.error(error);
             });
+    }
+}
+
+bot.on('message', (message) => {
+    if (message.content.startsWith(getPrefix(message.guild.id) + "user")) {
+        if (message.author.bot) return;
+        const args = message.content.split(/\s+/g).slice(1);
+        let vkID = args[0].replace("https://vk.com/", "").replace("http://vk.com/", "").replace("/", "");
+        let member = message.mentions.members.first();
+        if (member !== undefined) {
+            let users = JSON.parse(fs.readFileSync("./users.json", "utf8"));
+            if (users[member.id] === undefined) { message.reply("Данный пользователь ещё не привязал свой аккаунт **ВКонтакте**!"); return; }
+            getUsercard(users[member.id].vkLink, message);
+        } else if (vkID !== undefined || vkID !== "") {
+            getUsercard(vkID, message);
+        }
     }
 
     if (message.content.startsWith(getPrefix(message.guild.id) + "group")) {
