@@ -1,5 +1,5 @@
 {
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "plugin:jsdoc/recommended"],
     "env": {
         "node": true,
         "es6": true
@@ -47,7 +47,7 @@
                 "max": 2
             }
         ],
-        "no-console": "off",
+        "no-console": 1,
         "no-empty-function": "error",
         "no-floating-decimal": "error",
         "no-inline-comments": "error",
