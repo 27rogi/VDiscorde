@@ -1,45 +1,38 @@
-// The small helper object that allows us to store command information
-// in one place and modify it without duplicating the code.
-const commands = {};
+// For easier command management and simplier help command generation we use "command store".
+// It allows us to get information about commands that bot provides, to do that we register them when we're importing the module.
+const { Collection } = require("discord.js");
+const logger = require("./logger");
+const chalk = require("chalk");
+
+const commands = new Collection();
 
 module.exports = {
 	getByCategory(category) {
-		return commands[category];
-	},
-	getByName(name) {
-		return new Promise((resolve, reject) => {
-			for (const category of Object.keys(commands)) {
-				if (commands[category][name]) resolve(commands[category][name]);
-			}
-			reject(null);
-		});
+		return commands.filter(command => category === command.category);
 	},
 	getCategories() {
-		return Object.keys(commands);
+		const categories = [];
+		commands.forEach((command) => {
+			if (categories.indexOf(command.category) > -1) return;
+			else categories.push(command.category);
+		});
+		return categories.sort((a, b) => a.localeCompare(b));
 	},
 	/**
-     * Adds a new command information to the command store.
-     *
-     * @param {string} category - Category that this command belongs.
-     * @param {string} command - Word that used to call the command.
-     * @param {?Array} aliases - Array of alternative words to call the command. If you don't need aliases just use `null`.
-     * @param {string} description - Description of your command that will be used in help.
-     * @param {Array} permissions - Array of permissions that user should have to call the command.
-     * @returns {Object}
-     */
-	add(category, command, aliases, description, permissions) {
-		if (!commands[category]) commands[category] = {};
+	 * Adds a new command information to the command store.
+	 *
+	 * @param {{command: string, category: string, description: string, aliases: ?Array, onLoad: Function}} data - Information that shared in command collection.
+	 * @returns {object} - Commands object with registered command.
+	 */
+	add(data) {
+		if (typeof data !== "object") return logger.error(`Command ${chalk.yellow(data.command)} wasn't registered because no command data was provided!`);
+		if (typeof data.onLoad !== "function") return logger.error(`Command ${chalk.yellow(data.command)} wasn't registered because it has no execution function!`);
+		if (!data.category) return logger.error(`Command ${chalk.yellow(data.command)} wasn't registered because it has no category!`);
+		if (!data.description) return logger.error(`Command ${chalk.yellow(data.command)} wasn't registered because it has no description!`);
+		if (data.enabled == false) return logger.info(chalk.yellow(`A command module named '${chalk.green(data.command)}' was disabled.`));
 
-		if (!commands[category][command]) {
-			commands[category][command] = {
-				aliases: aliases,
-				description: description,
-				permissions: permissions,
-			};
-		}
-		return commands;
+		logger.info(`A command '${chalk.green(data.command)}' has been registered.`);
+		return commands.set(data.command, data);
 	},
-	getAll() {
-		return commands;
-	},
+	commands,
 };
