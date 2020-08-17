@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const chalk = require("chalk");
 const settings = require("../settings.json");
 
@@ -12,6 +13,6 @@ module.exports = {
 		return console.log(chalk.bgBlueBright.black(prefix) + " " + chalk.gray(message));
 	},
 	error(error) {
-		return console.error(chalk.bgRed.black(prefix + "| ERROR: ") + " " + chalk.red(error));
+		return console.error(chalk.bgRed.black(prefix + " | ERROR: ") + " " + chalk.red(error));
 	},
 };
