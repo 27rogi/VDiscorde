@@ -5,6 +5,7 @@ const fs = require("fs");
 const logger = require("./utils/logger");
 const chalk = require("chalk");
 const { VK } = require("vk-io");
+const languages = require("./utils/languages");
 
 const client = new Discord.Client();
 const vk = new VK({
@@ -18,6 +19,8 @@ client.once("ready", async () => {
 		logger.info(err);
 		process.exit(1);
 	});
+
+	languages.init(settings.localization.defaultLanguage);
 
 	for (const moduleFile of moduleFiles) {
 		const module = require(`./modules/${moduleFile}`);
