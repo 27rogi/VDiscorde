@@ -1,18 +1,18 @@
 /* eslint-disable no-console */
-const chalk = require("chalk");
-const settings = require("../settings.json");
+import chalk from "chalk";
+import settings from "../settings.json";
 
 const prefix = "(VDiscorde)";
 
-module.exports = {
-	info(message) {
+export default {
+	info(message: string) {
 		return console.log(chalk.bgBlueBright.black(prefix) + " " + message);
 	},
-	debug(message) {
+	debug(message: string) {
 		if (settings.general["debug"] === false) return;
 		return console.log(chalk.bgBlueBright.black(prefix) + " " + chalk.gray(message));
 	},
-	error(error) {
+	error(error: string | Error) {
 		return console.error(chalk.bgRed.black(prefix + " | ERROR: ") + " " + chalk.red(error));
 	},
 };

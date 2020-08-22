@@ -2,22 +2,27 @@
   "name": "vdiscorde",
   "version": "0.1.0",
   "description": "A Discord bot that allows you to work with VK.com and gives you useful commands.",
-  "main": "bot.js",
+  "main": "dist/core.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "gulp build && cd dist && nodemon core.js"
   },
   "author": "Voknehzyr",
   "license": "Apache-2.0",
   "dependencies": {
+    "@types/node": "^14.6.0",
     "chalk": "^4.1.0",
     "discord.js": "^12.2.0",
     "dot-prop": "^5.2.0",
     "dotenv": "^8.2.0",
     "eslint": "^7.5.0",
-    "vk-io": "^4.0.0-rc.30"
+    "vk-io": "^4.0.1"
   },
   "devDependencies": {
+    "@types/ws": "^7.2.6",
     "eslint-plugin-jsdoc": "^30.2.2",
-    "nodemon": "^2.0.4"
+    "gulp": "4.0.2",
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "nodemon": "^2.0.4",
+    "typescript": "^3.9.7"
   }
 }

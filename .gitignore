@@ -1,3 +1,6 @@
+/dist/*
+/src/settings.json
+
 .vscode
 # Logs
 logs
@@ -114,5 +117,3 @@ out
 .yarn/unplugged
 .yarn/build-state.yml
 .pnp.*
-
-settings.json*
